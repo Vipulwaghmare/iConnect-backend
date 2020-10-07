@@ -7,9 +7,10 @@ const cors = require('cors')
 const companyRoutes = require('./Routes/company')
 
 // Connecting database
-mongoose.connect("mongodb://localhost:27017/mechanical",{
+mongoose.connect("mongodb://localhost:27017/iConnect",{
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useCreateIndex: true
 })
 .then(()=> console.log("Database connected"))
 .catch(()=> console.log("DataBase connection Error"))

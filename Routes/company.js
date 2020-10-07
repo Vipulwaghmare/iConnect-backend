@@ -1,29 +1,61 @@
 const express = require('express')
 const router = express.Router()
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
+const formidable = require('formidable')
 const Company = require('../Models/company')
 
-const { addCompany } = require('../Controller/company')
+const { addCompany, editCompany, deleteCompany, getAllCompanies } = require('../Controller/company')
 
-router.post('/addCompany',[
-    check('name')
+router.post('/addCompany',(req, res, next)=> {
+    let form = new formidable.IncomingForm()
+    form.keepExtensions = true;
+
+    form.parse(req, (err, fields, file)=> {
+        if(err){
+            return res.status(400).json({
+                error: "Issue with the image"
+            })
+        }
+        if(file.logo){
+            req.body.logo = file.logo
+            if(file.logo.size > 1048576){
+                return res.status(400).json({
+                    error: "File size should be less than 1 Mb"
+                })
+            }
+            req.logo.data = fs.readFileSync(file.logo.path)
+            req.logo.contentType = file.logo.type
+        }
+        req.body.name = fields.name
+        req.body.email = fields.email
+        req.body.fields = fields
+    })
+    next()
+},[
+    body('name')
         .custom(value=>{
             return Company.findOne({name: value}).then(co => {
                 if(co){
-                    return Promise.reject('Name already in use')
+                    throw new Error('Name already in use')
                 }
             })
         }),
     check('email')
-        .isEmail()
-        .withMessage("Should be a valid Email")
         .custom(value=>{
+            console.log("EMAIL",value)
             return Company.findOne({email: value}).then(co => {
                 if(co){
-                    return Promise.reject('E-mail already in use')
+                    console.log("her")
+                    throw new Error('E-mail already in use')
                 }
             })
         })
 ],addCompany)
+
+router.put('/editCompany', editCompany)
+
+router.delete('/deleteCompany', deleteCompany)
+
+router.get('/getAllCompanies', getAllCompanies)
 
 module.exports = router

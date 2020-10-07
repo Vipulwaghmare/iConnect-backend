@@ -5,7 +5,7 @@ const companySchema = new Schema ({
     name: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
     },
     description: {
         type: String,
@@ -17,7 +17,8 @@ const companySchema = new Schema ({
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     logo: {
         type: Buffer,
