@@ -4,7 +4,9 @@ const { check, body } = require('express-validator');
 const formidable = require('formidable')
 const Company = require('../Models/company')
 
-const { addCompany, editCompany, deleteCompany, getAllCompanies } = require('../Controller/company')
+const { addCompany, getCompanyById, getACompany ,editCompany, deleteCompany, getAllCompanies } = require('../Controller/company')
+
+router.param("companyId", getCompanyById)
 
 router.post('/addCompany',(req, res, next)=> {
     let form = new formidable.IncomingForm()
@@ -42,7 +44,6 @@ router.post('/addCompany',(req, res, next)=> {
         }),
     check('email')
         .custom(value=>{
-            console.log("EMAIL",value)
             return Company.findOne({email: value}).then(co => {
                 if(co){
                     console.log("her")
@@ -52,9 +53,11 @@ router.post('/addCompany',(req, res, next)=> {
         })
 ],addCompany)
 
-router.put('/editCompany', editCompany)
+router.get("/company/:companyId" , getACompany)
 
-router.delete('/deleteCompany', deleteCompany)
+router.put('/editCompany/:companyId', editCompany)
+
+router.delete('/deleteCompany/:companyId', deleteCompany)
 
 router.get('/getAllCompanies', getAllCompanies)
 

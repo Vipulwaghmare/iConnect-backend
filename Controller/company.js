@@ -21,14 +21,52 @@ exports.addCompany = (req, res) => {
         })  
 }
 
+exports.getCompanyById = (req, res, next , id) => {
+    Company.findById(id)
+        .exec((error, company)=>{
+            if(error){
+                return res.status(400).json({
+                    error: "Company not found"
+                })
+            }
+            req.company = company;
+            next()
+        })
+}
+
+exports.getACompany = (req, res)=> {
+    return res.json(req.company)
+}
+
 exports.editCompany=(req, res)=> {
 
 } 
 
 exports.deleteCompany =(req, res) => {
-
+    // Need to change below line
+    Company.findByIdAndDelete(req.company._id)
+        .exec((error, comp)=>{
+            if(error){
+                return res.json({
+                    error: "Delete Company Failed"
+                })
+            }
+            return res.json({
+                message: "Deletion of company is successful",
+                comp
+            })
+        })
 }
 
 exports.getAllCompanies =(req, res)=> {
-
+    Company.find()
+        .select("-logo")
+        .exec((error, companies)=>{
+            if(error){
+                return res.status(400).json({
+                    error: "No companies found in DB"
+                })
+            }
+            res.json(companies)
+        })
 }
