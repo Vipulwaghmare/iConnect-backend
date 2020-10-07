@@ -2,6 +2,7 @@ const Company = require("../Models/company")
 const { validationResult } = require('express-validator');
 const formidable = require('formidable')
 const fs = require("fs");
+const _ = require("lodash");
 
 exports.addCompany = (req, res) => {
     const errors = validationResult(req)
@@ -34,12 +35,50 @@ exports.getCompanyById = (req, res, next , id) => {
         })
 }
 
-exports.getACompany = (req, res)=> {
-    return res.json(req.company)
+exports.getCompanyByName = (req, res)=> {
+    Company.find({name: req.body.name}).exec((error, company)=> {
+        if(error || company.length === 0){
+            return res.status(400).json({
+                error: "No company found by given name"
+            })
+        }
+        return res.json(company)
+    })
 }
 
 exports.editCompany=(req, res)=> {
+    let form = new formidable.IncomingForm()
+    form.keepExtensions = true;
 
+    form.parse(req, (err, fields, file)=> {
+        if(err){
+            return res.status(400).json({
+                error: "Issue with the image"
+            })
+        }
+        
+        let company = new Company(req.company)
+        company = _.extend(company, fields)
+        if(file.logo){
+            req.body.logo = file.logo
+            if(file.logo.size > 1048576){
+                return res.status(400).json({
+                    error: "File size should be less than 1 Mb"
+                })
+            }
+            company.logo.data = fs.readFileSync(file.logo.path)
+            company.logo.contentType = file.logo.type
+        }
+        company.save((error, company)=> {
+            if(error){
+                res.status(400).json({
+                    error: "Failed to update company details"
+                })
+            }
+            res.json(company)
+        })  
+    }) 
+        
 } 
 
 exports.deleteCompany =(req, res) => {

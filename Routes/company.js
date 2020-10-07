@@ -4,7 +4,7 @@ const { check, body } = require('express-validator');
 const formidable = require('formidable')
 const Company = require('../Models/company')
 
-const { addCompany, getCompanyById, getACompany ,editCompany, deleteCompany, getAllCompanies } = require('../Controller/company')
+const { addCompany, getCompanyById, getCompanyByName ,editCompany, deleteCompany, getAllCompanies } = require('../Controller/company')
 
 router.param("companyId", getCompanyById)
 
@@ -53,9 +53,9 @@ router.post('/addCompany',(req, res, next)=> {
         })
 ],addCompany)
 
-router.get("/company/:companyId" , getACompany)
+router.post("/getCompanyByName" , getCompanyByName)
 
-router.put('/editCompany/:companyId', editCompany)
+router.put('/editCompany/:companyId',editCompany)
 
 router.delete('/deleteCompany/:companyId', deleteCompany)
 
