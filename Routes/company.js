@@ -4,7 +4,7 @@ const { check, body } = require('express-validator');
 const formidable = require('formidable')
 const Company = require('../Models/company')
 
-const { addCompany, getCompanyById, getCompanyByName ,editCompany, deleteCompany, getAllCompanies } = require('../Controller/company')
+const { addCompany, getCompanyById, getCompanyByName ,editCompany, deleteCompany, getAllCompanies, getAllAscCompanies, getAllDscCompanies } = require('../Controller/company')
 
 router.param("companyId", getCompanyById)
 
@@ -60,5 +60,7 @@ router.put('/editCompany/:companyId',editCompany)
 router.delete('/deleteCompany/:companyId', deleteCompany)
 
 router.get('/getAllCompanies', getAllCompanies)
+router.get('/getAllAscCompanies', getAllAscCompanies)
+router.get('/getAllDscCompanies', getAllDscCompanies)
 
 module.exports = router

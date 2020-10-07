@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const formidable = require('formidable')
 const fs = require("fs");
 const _ = require("lodash");
+const { sortBy } = require("lodash");
 
 exports.addCompany = (req, res) => {
     const errors = validationResult(req)
@@ -100,6 +101,34 @@ exports.deleteCompany =(req, res) => {
 exports.getAllCompanies =(req, res)=> {
     Company.find()
         .select("-logo")
+        .exec((error, companies)=>{
+            if(error){
+                return res.status(400).json({
+                    error: "No companies found in DB"
+                })
+            }
+            res.json(companies)
+        })
+}
+
+exports.getAllAscCompanies =(req, res)=> {
+    Company.find()
+        .select("-logo")
+        .sort({name: "asc"})
+        .exec((error, companies)=>{
+            if(error){
+                return res.status(400).json({
+                    error: "No companies found in DB"
+                })
+            }
+            res.json(companies)
+        })
+}
+
+exports.getAllDscCompanies =(req, res)=> {
+    Company.find()
+        .select("-logo")
+        .sort({name: "desc"})
         .exec((error, companies)=>{
             if(error){
                 return res.status(400).json({
