@@ -21,7 +21,8 @@ const companySchema = new Schema ({
         unique: true
     },
     logo: {
-        type: Buffer,
+        data: Buffer,
+        contentType: String
         // required: true,
     },
     city: {

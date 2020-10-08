@@ -1,26 +1,63 @@
 const Company = require("../Models/company")
-const { validationResult } = require('express-validator');
 const formidable = require('formidable')
 const fs = require("fs");
 const _ = require("lodash");
-const { sortBy } = require("lodash");
 
 exports.addCompany = (req, res) => {
-    const errors = validationResult(req)
-    if(!errors.isEmpty()){
-        return res.status(400).json({
-            error: errors.array()[0].msg
-        })
-    }
-        const company = new Company(req.body.fields)
-        company.save((error, company)=> {
-            if(error){
-                res.status(400).json({
-                    error: "Failed to save company details"
+    let form = new formidable.IncomingForm()
+    form.keepExtensions = true;
+    form.parse(req, (err, fields, file)=> {
+        if(err){
+            return res.status(400).json({
+                error: "Issue with the image"
+            })
+        }
+
+        const { name, description, contact, email, state, city } = fields;
+        if(!name || !description || !contact || !email || !state || !city){
+            return res.status(400).json({
+                error: "Please include all fields"
+            })
+        }
+
+        
+        Company.findOne({ name: fields.name }, (err, comp) => {
+            if (comp) {
+                console.log("D")
+              return res.status(400).json({
+                error: "Name already in use"
+              })
+            } else{
+                Company.findOne({ email: fields.email }, (err, comp) => {
+                    if (comp) {
+                      return res.status(400).json({
+                        error: "Email already in use"
+                      })
+                    } else {
+                        let company = new Company(fields)
+        
+                if(file.logo){
+                    if(file.logo.size > 1048576){
+                        return res.status(400).json({
+                            error: "File size should be less than 1 Mb"
+                        })
+                    } 
+                        company.logo.data = fs.readFileSync(file.logo.path)
+                        company.logo.contentType = file.logo.type
+                }  
+                company.save((error, company)=>{
+                    if(error){
+                        res.status(400).json({
+                            error: "Failed to save company details"
+                        })
+                    }
+                    return res.json(company)
+                })
+                    }
                 })
             }
-            res.json(company)
-        })  
+        })
+    })
 }
 
 exports.getCompanyById = (req, res, next , id) => {
@@ -60,15 +97,15 @@ exports.editCompany=(req, res)=> {
         
         let company = new Company(req.company)
         company = _.extend(company, fields)
+
         if(file.logo){
-            req.body.logo = file.logo
             if(file.logo.size > 1048576){
                 return res.status(400).json({
                     error: "File size should be less than 1 Mb"
                 })
-            }
-            company.logo.data = fs.readFileSync(file.logo.path)
-            company.logo.contentType = file.logo.type
+            } 
+                company.logo.data = fs.readFileSync(file.logo.path)
+                company.logo.contentType = file.logo.type
         }
         company.save((error, company)=> {
             if(error){
@@ -93,14 +130,13 @@ exports.deleteCompany =(req, res) => {
             }
             return res.json({
                 message: "Deletion of company is successful",
-                comp
             })
         })
 }
 
 exports.getAllCompanies =(req, res)=> {
     Company.find()
-        .select("-logo")
+        .select("-logo") 
         .exec((error, companies)=>{
             if(error){
                 return res.status(400).json({
@@ -137,4 +173,12 @@ exports.getAllDscCompanies =(req, res)=> {
             }
             res.json(companies)
         })
+}
+
+exports.getLogo = (req,res,next) => {
+    if(req.company.logo.data){
+        res.set("Content-Type",req.company.logo.contentType)
+        return res.send(req.company.logo.data)
+    }
+    next()
 }
